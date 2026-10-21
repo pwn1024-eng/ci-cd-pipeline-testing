@@ -12,6 +12,7 @@ pipeline {
             steps {
                 dir('backend') {
                     sh '''
+                        set -eu
                         python3 -m venv venv
                         . venv/bin/activate
                         pip install -r requirements.txt
@@ -26,8 +27,12 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh '''
-                        npm ci || npm install
-                        npm run build
+                        set -eu
+                        docker run --rm \
+                          -v "$WORKSPACE/frontend:/app" \
+                          -w /app \
+                          node:22-alpine \
+                          sh -lc 'npm ci && npm run build'
                     '''
                 }
             }
@@ -35,7 +40,10 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker compose build'
+                sh '''
+                    set -eu
+                    docker compose build
+                '''
             }
         }
 
