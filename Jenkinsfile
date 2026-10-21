@@ -149,21 +149,32 @@ pipeline {
         }
     }
 
-    post {
-        success {
-            echo 'CI/CD pipeline completed successfully.'
-        }
-
-        failure {
-            echo 'Pipeline failed. Review the stage logs before redeploying.'
-            sh '''
-                docker compose -f "$COMPOSE_FILE" ps || true
-            '''
-        }
-
-        always {
-            echo 'Pipeline finished.'
-            deleteDir()
-        }
+   
+post {
+    success {
+        echo 'CI/CD deployment and tests completed successfully.'
     }
+
+    failure {
+        echo 'A pipeline stage failed. Review the console output.'
+        sh '''
+            docker compose -f docker-compose.yml ps || true
+        '''
+    }
+
+    always {
+        echo 'Fixing workspace permissions before cleanup...'
+
+        sh '''
+            set -eu
+            docker run --rm \
+              -v "$WORKSPACE:/workspace" \
+              alpine:3.20 \
+              chown -R "$(id -u):$(id -g)" /workspace
+        '''
+
+        deleteDir()
+    }
+}
+
 }
