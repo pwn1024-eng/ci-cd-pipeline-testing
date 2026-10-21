@@ -22,9 +22,31 @@ pipeline {
             }
         }
 
+        stage('Frontend Build') {
+            steps {
+                dir('frontend') {
+                    sh '''
+                        npm ci || npm install
+                        npm run build
+                    '''
+                }
+            }
+        }
+
         stage('Docker Build') {
             steps {
                 sh 'docker compose build'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    set -eu
+                    docker compose config -q
+                    docker compose up -d --remove-orphans
+                    docker compose ps
+                '''
             }
         }
     }
