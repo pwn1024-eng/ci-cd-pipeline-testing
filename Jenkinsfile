@@ -15,6 +15,7 @@ pipeline {
                         python3 -m venv venv
                         . venv/bin/activate
                         pip install -r requirements.txt
+                        export PYTHONPATH=$PWD
                         pytest
                     '''
                 }
@@ -41,7 +42,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            deleteDir()          // built-in alternative to cleanWs()
         }
         success {
             echo 'Pipeline succeeded!'
