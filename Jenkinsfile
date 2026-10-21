@@ -22,17 +22,6 @@ pipeline {
             }
         }
 
-        stage('Frontend Build') {
-            steps {
-                dir('frontend') {
-                    sh '''
-                        npm ci || npm install
-                        npm run build
-                    '''
-                }
-            }
-        }
-
         stage('Docker Build') {
             steps {
                 sh 'docker compose build'
@@ -42,7 +31,7 @@ pipeline {
 
     post {
         always {
-            deleteDir()          // built-in alternative to cleanWs()
+            deleteDir()
         }
         success {
             echo 'Pipeline succeeded!'
